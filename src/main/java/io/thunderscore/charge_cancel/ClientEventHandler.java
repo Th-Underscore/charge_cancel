@@ -8,12 +8,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.common.Tags;
 import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
@@ -65,13 +63,10 @@ public class ClientEventHandler {
         if (player == null) return;
 
         ItemStack usingItem = player.getUseItem();
-        boolean isChargeableItem = usingItem.is(Tags.Items.TOOLS_BOWS)
-                || usingItem.is(Tags.Items.TOOLS_CROSSBOWS)
-                || usingItem.is(Tags.Items.TOOLS_TRIDENTS);
 
         boolean isCancelDown = isCancelKeyDown(mc);
 
-        if (isCancelDown && player.isUsingItem() && isChargeableItem) {
+        if (isCancelDown && player.isUsingItem() && isChargeableItem(usingItem)) {
             cancelCharge(player, mc);
             suppressingUse = true;
         }
@@ -83,6 +78,15 @@ public class ClientEventHandler {
                 suppressingUse = false;
             }
         }
+    }
+
+    private static boolean isChargeableItem(ItemStack usingItem) {
+        if (usingItem.isEmpty()) return false;
+
+        net.minecraft.world.item.Item item = usingItem.getItem();
+        return item instanceof net.minecraft.world.item.BowItem
+                || item instanceof net.minecraft.world.item.CrossbowItem
+                || item instanceof net.minecraft.world.item.TridentItem;
     }
 
     private static boolean isCancelKeyDown(Minecraft mc) {
