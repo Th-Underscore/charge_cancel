@@ -1,14 +1,14 @@
 # Cancel Charge
 
-Cancels an offhand item charge when the Attack key is pressed.
+Cancels any item charge when the Attack key is pressed.
 
 ## Motivation
 
-I wanted to cancel bow charges in the offhand without having to switch back to the main hand or wait for the draw to complete.
+I wanted to cancel bow charges in the offhand without having to switch back to the mainhand or wait for the draw to complete.
 
 ## Usage
 
-While holding use (right-click) on an offhand item like a bow, press Attack (left-click) to instantly cancel the charge.
+While holding use (right-click) on any chargeable item like a bow, press Attack (left-click) to instantly cancel the charge. This works for mainhand and offhand, as well as most modded items (tested in Otherworld). Compatible with rebound controls.
 
 ## Compatibility
 
