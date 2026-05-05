@@ -8,12 +8,15 @@ I wanted to cancel bow charges in the offhand without having to switch back to t
 
 ## Usage
 
-While holding use (right-click) on any chargeable item like a bow, press Attack (left-click) to instantly cancel the charge. This works for mainhand and offhand, as well as most modded items (tested in Otherworld). Compatible with rebound controls.
+While holding use (right-click) on any chargeable item like a bow, press Attack (left-click) to instantly cancel the charge.
 
 ## Compatibility
 
-- Works with any chargeable item (bows, crossbows, tridents, etc.)
-- Server-side compatible (packets are handled properly)
+- Mainhand or offhand
+- Any chargeable item (bows, crossbows, tridents, etc.)
+- Rebound controls
+- Modded items
+- Server-side compatible
 - Multiplayer safe
 - Forge 1.20.1
 
