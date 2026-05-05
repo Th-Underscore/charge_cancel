@@ -24,8 +24,9 @@ import java.util.List;
 @EventBusSubscriber(modid = "charge_cancel", bus = Bus.FORGE, value = Dist.CLIENT)
 public class ClientEventHandler {
     private static final List<Field> USE_ITEM_FIELDS = new ArrayList<>();
+    private static Field SWINGING_FIELD;
     private static boolean initialized = false;
-    private static boolean suppressing = false;
+    private static boolean suppressingUse = false;
 
     private static void init() {
         if (initialized) return;
@@ -35,6 +36,22 @@ public class ClientEventHandler {
                 f.setAccessible(true);
                 USE_ITEM_FIELDS.add(f);
             }
+        }
+
+        for (Class<?> c : new Class<?>[]{
+                net.minecraft.client.player.LocalPlayer.class,
+                net.minecraft.client.player.AbstractClientPlayer.class,
+                net.minecraft.world.entity.player.Player.class,
+                net.minecraft.world.entity.LivingEntity.class
+        }) {
+            for (Field f : c.getDeclaredFields()) {
+                if (f.getType() == boolean.class && (f.getName().equals("swinging") || f.getName().contains("Swinging"))) {
+                    f.setAccessible(true);
+                    SWINGING_FIELD = f;
+                    break;
+                }
+            }
+            if (SWINGING_FIELD != null) break;
         }
     }
 
@@ -52,23 +69,29 @@ public class ClientEventHandler {
                 || usingItem.is(Tags.Items.TOOLS_CROSSBOWS)
                 || usingItem.is(Tags.Items.TOOLS_TRIDENTS);
 
-        if (isCancelKeyDown(mc) && player.isUsingItem() && isChargeableItem) {
+        boolean isCancelDown = isCancelKeyDown(mc);
+
+        if (isCancelDown && player.isUsingItem() && isChargeableItem) {
             cancelCharge(player, mc);
-            suppressing = true;
+            suppressingUse = true;
         }
 
-        if (suppressing) {
+        if (suppressingUse) {
             mc.options.keyUse.setDown(false);
-            if (!isUseKeyPhysicallyDown(mc)) {
-                suppressing = false;
+            mc.options.keyAttack.setDown(false);
+            if (!isCancelDown) {
+                suppressingUse = false;
             }
         }
     }
 
     private static boolean isCancelKeyDown(Minecraft mc) {
-        if (Keybinds.CANCEL_CHARGE.isDown()) {
-            return true;
+        int cancelKeyValue = Keybinds.CANCEL_CHARGE.getKey().getValue();
+
+        if (cancelKeyValue >= 0) {
+            return Keybinds.CANCEL_CHARGE.isDown();
         }
+
         long window = mc.getWindow().getWindow();
         int value = mc.options.keyAttack.getKey().getValue();
         if (value < 0) {
@@ -80,27 +103,7 @@ public class ClientEventHandler {
     private static void cancelCharge(LocalPlayer player, Minecraft mc) {
         clearUseItem(player);
         mc.options.keyUse.setDown(false);
-        mc.options.keyAttack.setDown(false);
         ModNetworking.INSTANCE.sendToServer(new ModNetworking.CancelChargeC2SPacket());
-        ModNetworking.setIgnoreNextClientAttack();
-    }
-
-    private static boolean isMouseButton(KeyMapping key) {
-        return key.getKey().getType().name().equals("MOUSE");
-    }
-
-    private static boolean isKeyboardKey(KeyMapping key) {
-        return key.getKey().getType().name().equals("KEYSYM");
-    }
-
-    private static boolean isUseKeyPhysicallyDown(Minecraft mc) {
-        long window = mc.getWindow().getWindow();
-        KeyMapping key = mc.options.keyUse;
-        int value = key.getKey().getValue();
-        if (isMouseButton(key)) {
-            return GLFW.glfwGetMouseButton(window, value) == GLFW.GLFW_PRESS;
-        }
-        return GLFW.glfwGetKey(window, value) == GLFW.GLFW_PRESS;
     }
 
     private static void clearUseItem(LocalPlayer player) {

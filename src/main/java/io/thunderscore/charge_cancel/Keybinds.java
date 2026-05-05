@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
-import org.lwjgl.glfw.GLFW;
 
 public class Keybinds {
 
@@ -17,8 +16,8 @@ public class Keybinds {
         CANCEL_CHARGE = new KeyMapping(
             KEY_CANCEL_CHARGE,
             KeyConflictContext.IN_GAME,
-            InputConstants.Type.MOUSE,
-            GLFW.GLFW_MOUSE_BUTTON_LEFT,
+            InputConstants.Type.KEYSYM,
+            -1,
             KEY_CATEGORY_CANCELCHARGE
         );
         event.register(CANCEL_CHARGE);

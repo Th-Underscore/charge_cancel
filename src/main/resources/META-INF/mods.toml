@@ -5,8 +5,8 @@ license="MIT"
 [[mods]]
 modId="charge_cancel"
 version="${file.jarVersion}"
-displayName="Cancel Charge"
-description="Cancels an offhand item charge when the Attack key is pressed."
+displayName="Charge Cancel"
+description="Cancels an offhand item charge when the Attack key (default) is pressed."
 logoFile="bow_cancel.png"
 
 [[dependencies.charge_cancel]]
