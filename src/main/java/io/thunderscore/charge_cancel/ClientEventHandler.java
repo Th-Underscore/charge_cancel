@@ -13,6 +13,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.minecraftforge.common.Tags;
 import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
@@ -46,6 +47,16 @@ public class ClientEventHandler {
         LocalPlayer player = mc.player;
         if (player == null) return;
 
+        ItemStack usingItem = player.getUseItem();
+        boolean isChargeableItem = usingItem.is(Tags.Items.TOOLS_BOWS)
+                || usingItem.is(Tags.Items.TOOLS_CROSSBOWS)
+                || usingItem.is(Tags.Items.TOOLS_TRIDENTS);
+
+        if (isCancelKeyDown(mc) && player.isUsingItem() && isChargeableItem) {
+            cancelCharge(player, mc);
+            suppressing = true;
+        }
+
         if (suppressing) {
             mc.options.keyUse.setDown(false);
             if (!isUseKeyPhysicallyDown(mc)) {
@@ -54,54 +65,16 @@ public class ClientEventHandler {
         }
     }
 
-    @SubscribeEvent
-    public static void onMouseInput(InputEvent.MouseButton.Pre event) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
-
-        boolean isAttack = isMouseButton(mc.options.keyAttack) && event.getButton() == mc.options.keyAttack.getKey().getValue();
-        boolean isUse = isMouseButton(mc.options.keyUse) && event.getButton() == mc.options.keyUse.getKey().getValue();
-
-        if (isAttack && mc.player.isUsingItem()) {
-            mc.options.keyAttack.consumeClick();
-            event.setCanceled(true);
-            cancelCharge(mc.player, mc);
-            suppressing = true;
-            return;
+    private static boolean isCancelKeyDown(Minecraft mc) {
+        if (Keybinds.CANCEL_CHARGE.isDown()) {
+            return true;
         }
-
-        if (suppressing) {
-            if (!isUseKeyPhysicallyDown(mc)) {
-                suppressing = false;
-            } else if (isAttack || isUse) {
-                event.setCanceled(true);
-            }
+        long window = mc.getWindow().getWindow();
+        int value = mc.options.keyAttack.getKey().getValue();
+        if (value < 0) {
+            return GLFW.glfwGetKey(window, value) == GLFW.GLFW_PRESS;
         }
-    }
-
-    @SubscribeEvent
-    public static void onKeyInput(InputEvent.Key event) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
-
-        boolean isAttack = isKeyboardKey(mc.options.keyAttack) && event.getKey() == mc.options.keyAttack.getKey().getValue();
-        boolean isUse = isKeyboardKey(mc.options.keyUse) && event.getKey() == mc.options.keyUse.getKey().getValue();
-
-        if (isAttack && mc.player.isUsingItem()) {
-            mc.options.keyAttack.consumeClick();
-            event.setCanceled(true);
-            cancelCharge(mc.player, mc);
-            suppressing = true;
-            return;
-        }
-
-        if (suppressing) {
-            if (!isUseKeyPhysicallyDown(mc)) {
-                suppressing = false;
-            } else if (isAttack || isUse) {
-                event.setCanceled(true);
-            }
-        }
+        return GLFW.glfwGetMouseButton(window, value) == GLFW.GLFW_PRESS;
     }
 
     private static void cancelCharge(LocalPlayer player, Minecraft mc) {
